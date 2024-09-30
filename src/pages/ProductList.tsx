@@ -42,6 +42,7 @@ export type Product = {
   price: number;
   created_at: string;
   updated_at: string;
+  image_url: string;
 }
 
 
@@ -52,6 +53,18 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ row }) => (
       <div>{row.getValue("id")}</div>
     ),
+  },
+  {
+    accessorKey: "image_url",
+    header: "Image",
+    cell: ({ row }) => {
+      const imageUrl: string = row.getValue("image_url");
+      return (
+        <div>
+          <img src={imageUrl} alt="Product" className="w-20 h-20 object-cover" />
+        </div>
+      );
+    },
   },
   {
     accessorKey: "name",
