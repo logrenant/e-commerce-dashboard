@@ -6,7 +6,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Alert } from '../components/ui/alert';
 
 const EditProduct: React.FC = () => {
-    const { id } = useParams<{ id: string }>();  // URL'den ürün ID'sini alıyoruz
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
     const [name, setName] = useState<string>('');
@@ -15,6 +15,8 @@ const EditProduct: React.FC = () => {
     const [updatedAt, setUpdatedAt] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [image, setImage] = useState<File | null>(null);
+    const [currentImageURL, setCurrentImageURL] = useState<string | null>(null); // Mevcut resim URL'si için
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -25,6 +27,7 @@ const EditProduct: React.FC = () => {
                 setDescription(product.description);
                 setPrice(product.price);
                 setUpdatedAt(product.updated_at);
+                setCurrentImageURL(product.image_url); // Mevcut resim URL'sini ayarla
             } catch (err) {
                 setError('Failed to load product');
             }
@@ -36,17 +39,24 @@ const EditProduct: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        // Basit doğrulama
         if (!name || price === '') {
             setError('Name and price are required');
             return;
         }
 
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('description', description);
+        formData.append('price', price.toString());
+        if (image) {
+            formData.append('image', image);
+        }
+
         try {
             const response = await axios.put(
                 `http://localhost:8080/products/${id}`,
-                { id, name, description, price },
-                { headers: { 'Content-Type': 'application/json' } }
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
             );
 
             setUpdatedAt(response.data.updated_at);
@@ -108,6 +118,25 @@ const EditProduct: React.FC = () => {
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
+                    <div className=''>
+                        <label htmlFor="image" className="block text-sm font-medium text-gray-700">Current Image</label>
+                        {currentImageURL && (
+                            <div>
+                                <img src={currentImageURL} alt="Current Product" className="w-full h-auto my-2" />
+                                <p className="text-sm text-gray-500">Current Image</p>
+                            </div>
+                        )}
+                        <input
+                            id="image"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                                if (e.target.files) {
+                                    setImage(e.target.files[0]);
+                                }
+                            }}
+                        />
+                    </div>
                     <div>
                         {updatedAt && (
                             <p className="text-sm text-zinc-300">Last updated at: {new Date(updatedAt).toLocaleString()}</p>
@@ -118,7 +147,7 @@ const EditProduct: React.FC = () => {
                             type="submit"
                             className="px-6 py-2 w-full text-md font-medium text-zinc-950 bg-zinc-300 hover:bg-white transition-all duration-300"
                         >
-                            Add Product
+                            Update Product
                         </button>
                         <button
                             type="button"

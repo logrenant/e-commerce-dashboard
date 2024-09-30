@@ -6,7 +6,7 @@ const LeftBar: React.FC = () => {
         <div className="flex flex-col justify-between bg-zinc-900 text-white text-2xl font-light py-8 w-fit min-h-screen">
             <div className="flex flex-col gap-20">
                 <Link to="/" className="px-8">
-                    Naughty Dashboard
+                    Admin Dashboard
                 </Link>
                 <div className="flex flex-col gap-2 pl-8">
                     <LeftBarLink to="/" label="Dashboard" />

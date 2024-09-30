@@ -8,26 +8,36 @@ const AddProduct: React.FC = () => {
     const [name, setName] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [price, setPrice] = useState<number | ''>('');
+    const [image, setImage] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (!name || price === '') {
-            setError('Name and price are required');
+        if (!name || price === '' || !image) {
+            setError('Name, price, and image are required');
             setSuccess(null);
             return;
         }
 
         try {
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('description', description);
+            formData.append('price', String(price));
+            formData.append('image', image);
+
             await axios.post(
                 'http://localhost:8080/products',
-                { name, description, price },
-                { headers: { 'Content-Type': 'application/json' } }
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
             );
+
             setName('');
             setDescription('');
             setPrice('');
+            setImage(null);
             setError(null);
             setSuccess('Product added successfully!');
         } catch (err) {
@@ -77,6 +87,20 @@ const AddProduct: React.FC = () => {
                         id="description"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
+                    />
+                </div>
+                <div>
+                    <label htmlFor="image" className="block text-sm font-medium text-gray-700">Product Image</label>
+                    <input
+                        id="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                            if (e.target.files) {
+                                setImage(e.target.files[0]);
+                            }
+                        }}
+                        required
                     />
                 </div>
                 <button
